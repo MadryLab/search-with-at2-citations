@@ -209,7 +209,7 @@ const Answer = ({ answer, sources, query, isGenerating, isWaitingForResources, p
                   setCitations([{
                     title: "No Citations",
                     link: "#",
-                    text: "No citations found.",
+                    text: "No citations (unverified statement).",
                     isNoCitation: true
                   }]);
                 }

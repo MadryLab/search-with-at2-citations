@@ -29,39 +29,25 @@ function App() {
   const [isWaitingForResources, setIsWaitingForResources] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Create debug logger
   const debugLog = createDebugLogger();
 
-  // Detect window resizing to optimize animation performance
   useEffect(() => {
     let resizeTimer;
     const handleResize = () => {
-      // Remove the ready class when resizing starts
       document.body.classList.remove('ready');
-      
-      // Clear any existing timeout
       clearTimeout(resizeTimer);
-      
-      // Set a timeout to add the ready class back after resizing stops
       resizeTimer = setTimeout(() => {
         document.body.classList.add('ready');
       }, 100);
     };
-
-    // Add resize event listener
     window.addEventListener('resize', handleResize);
-    
-    // Add ready class initially
     document.body.classList.add('ready');
-
-    // Clean up
     return () => {
       window.removeEventListener('resize', handleResize);
       clearTimeout(resizeTimer);
     };
   }, []);
 
-  // Reset state for new search
   const resetState = () => {
     setSearchResults([]);
     setAnswer('');
@@ -69,7 +55,6 @@ function App() {
     setShowAnswerBox(false);
   };
 
-  // Process search streaming response chunks with buffering
   const createSearchStreamProcessor = () => {
     let buffer = '';
     
@@ -78,59 +63,39 @@ function App() {
       let finalResults = null;
       
       try {
-        // Split buffer by newlines and process each complete JSON object
         let lines = buffer.split('\n');
-        // Save the last potentially incomplete line for next time
         buffer = lines.pop() || '';
         
-        // Process each complete line as a JSON object
         for (const line of lines) {
-          // Skip empty lines
           if (!line.trim()) continue;
           
           try {
             const data = JSON.parse(line);
-            debugLog('Parsed search data:', data);
-            
-            // Handle status updates from the backend
-            if (data.status === 'searching') {
-              debugLog('Search in progress');
+            if (data.status === 'started') {
+              setIsWaitingForResources(false);
             } else if (data.status === 'complete' && data.results) {
-              debugLog('Search complete with results:', data.results.length);
-              // Set search results when we receive the complete message
               setSearchResults(data.results);
               setIsWaitingForResources(false);
               finalResults = data.results;
             }
           } catch (parseError) {
             console.error('Error parsing JSON line:', parseError);
-            debugLog('Parse error:', parseError.message);
-            debugLog('Problematic line:', line.substring(0, 100) + (line.length > 100 ? '...' : ''));
-            // Continue processing other lines
           }
         }
         
         return finalResults;
       } catch (e) {
         console.error('Error processing search response:', e);
-        debugLog('Process error:', e.message);
-        debugLog('Buffer excerpt:', buffer.substring(0, 100) + '...');
-        
-        // In case of error, reset the buffer
         buffer = '';
         return null;
       }
     };
     
-    // Return the processor function that maintains buffer state
     return processBuffer;
   };
 
-  // Update the handleSearch function to use our new buffered processor
   const handleSearch = async (searchQuery) => {
-    // Prevent concurrent operations
     if (isProcessing) {
-      debugLog('Search operation prevented: another operation is in progress');
       return;
     }
 
@@ -291,7 +256,7 @@ function App() {
             
             // Handle status updates from the backend
             if (data.status) {
-              if (data.status === 'preparing') {
+              if (data.status === 'started') {
                 // Backend has started processing
                 setIsWaitingForResources(false);
               }
@@ -303,7 +268,7 @@ function App() {
             }
             
             // When we receive the last chunk, mark generation as complete
-            if (data.done) {
+            if (data.status === 'complete') {
               setIsGenerating(false);
               setIsWaitingForResources(false);
               debugLog('Answer generation complete');

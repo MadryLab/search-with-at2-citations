@@ -252,7 +252,7 @@ async def search(query: SearchQuery):
     try:
 
         async def generate_search_results():
-            yield json.dumps({"status": "searching"}) + "\n"
+            yield json.dumps({"status": "started"}) + "\n"
 
             # search_queries = get_search_queries(query.query)
             # print(f"Search queries: {search_queries}")
@@ -262,6 +262,7 @@ async def search(query: SearchQuery):
             # Mock results for testing - in production, use actual search API
             results = [
                 {"href": "https://en.wikipedia.org/wiki/Cactus", "title": "Cactus"},
+                {"href": "https://en.wikipedia.org/wiki/Saguaro", "title": "Saguaro"},
             ]
 
             formatted_results = []
@@ -281,7 +282,6 @@ async def search(query: SearchQuery):
                         )
                     )
 
-            # Send completion message with results
             yield json.dumps(
                 {
                     "status": "complete",
@@ -314,8 +314,7 @@ async def answer(prompt: LanguageModelPrompt):
     try:
 
         async def generate() -> AsyncGenerator[str, None]:
-            # Send initial "started" message
-            yield json.dumps({"status": "preparing", "text": "", "done": False}) + "\n"
+            yield json.dumps({"status": "started", "text": ""}) + "\n"
 
             task = create_attribution_task(prompt)
             streamer = get_streamer(task)
@@ -324,14 +323,12 @@ async def answer(prompt: LanguageModelPrompt):
             for cur_text in streamer:
                 text += cur_text
                 response_data = {
-                    "status": "generating",
                     "token": cur_text,
                     "text": text,
-                    "done": False,
                 }
                 yield json.dumps(response_data) + "\n"
 
-            yield json.dumps({"text": text, "done": True}) + "\n"
+            yield json.dumps({"status": "complete", "text": text}) + "\n"
 
         return StreamingResponse(generate(), media_type="application/x-ndjson")
     except Exception as e:
