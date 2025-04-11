@@ -1,0 +1,178 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global rule to disable all transitions and animations during resize */
+body:not(.ready) * {
+  transition: none !important;
+  animation: none !important;
+}
+
+:root {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #f9fafb;
+}
+
+#root {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* Search engine specific styles */
+.search-result-link {
+  color: #1a0dab;
+  text-decoration: none;
+}
+
+.search-result-link:hover {
+  text-decoration: underline;
+}
+
+.search-result-url {
+  color: #006621;
+  font-size: 0.875rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #121212;
+    color: #f9fafb;
+  }
+  
+  .search-result-link {
+    color: #8ab4f8;
+  }
+  
+  .search-result-url {
+    color: #3c8f51;
+  }
+}
+
+/* Custom selection styling for citations */
+.prose ::selection {
+  background-color: rgba(59, 130, 246, 0.3); /* Increased opacity for better visibility */
+  color: inherit;
+}
+
+.citation-highlight {
+  background-color: rgba(59, 130, 246, 0.2);
+  border-radius: 2px;
+  padding: 1px 2px;
+  margin: 0 -2px;
+  cursor: pointer;
+  position: relative;
+  animation: none; /* Disable animation initially */
+  transition: none; /* Remove any transitions */
+}
+
+/* Only apply animation when not resizing */
+.ready .citation-highlight {
+  animation: pulse 2s infinite;
+}
+
+/* Citation icon styling - remove animation for performance */
+.citation-icon {
+  display: inline-block;
+  margin-left: 2px;
+  animation: none; /* Changed from fadeIn animation */
+}
+
+/* Add styling for sentence-based highlighting */
+.sentence-highlight {
+  display: inline;
+  padding: 2px 0;
+  border-radius: 3px;
+  transition: background-color 0s; /* Changed from 0.1s to 0s for immediate response */
+}
+
+.sentence-highlight:hover {
+  background-color: rgba(59, 130, 246, 0.3); /* Increased from 0.15 for more contrast */
+}
+
+.dark .sentence-highlight:hover {
+  background-color: rgba(59, 130, 246, 0.4); /* Increased from 0.25 for more contrast */
+}
+
+/* Add active state styles for when citations are shown */
+.sentence-highlight.active {
+  background-color: rgba(59, 130, 246, 0.35); /* Slightly more intense than hover */
+  border-bottom: 1px solid rgba(59, 130, 246, 0.5); /* Add subtle underline */
+}
+
+.dark .sentence-highlight.active {
+  background-color: rgba(59, 130, 246, 0.45);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.6);
+}
+
+/* Add a subtle border between sentences for visual separation */
+.sentence-highlight + .sentence-highlight {
+  margin-left: 1px;
+}
+
+/* Citation sidebar scroll behavior */
+.citation-sidebar-container {
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.citation-content {
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+/* Customize scrollbar for citation sidebar */
+.citation-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.citation-content::-webkit-scrollbar-track {
+  background: rgba(229, 231, 235, 0.5);
+}
+
+.citation-content::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+
+.dark .citation-content::-webkit-scrollbar-track {
+  background: rgba(55, 65, 81, 0.5);
+}
+
+.dark .citation-content::-webkit-scrollbar-thumb {
+  background: rgba(107, 114, 128, 0.5);
+}
+
+/* Tooltip animation - only use for initial appearance, not resize */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.citation-tooltip {
+  animation: fadeIn 0.2s ease-in-out;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25); /* Stronger shadow */
+}
+
+/* Add a pulsing effect to the citation highlight but make it less resource-intensive */
+@keyframes pulse {
+  0% { background-color: rgba(59, 130, 246, 0.1); }
+  50% { background-color: rgba(59, 130, 246, 0.3); }
+  100% { background-color: rgba(59, 130, 246, 0.1); }
+} 

@@ -2,7 +2,7 @@ import os
 import re
 import json
 import threading
-from typing import List, Optional, AsyncGenerator, Dict, Tuple, Any
+from typing import List, Optional, AsyncGenerator, Dict, Tuple
 import requests
 from bs4 import BeautifulSoup
 import urllib.parse
@@ -52,8 +52,6 @@ def create_app():
         CORSMiddleware,
         allow_origins=[
             "https://bencw99.github.io",
-            "https://bencw99.github.io/qa-citations-fe",
-            "https://bencw99.github.io/qa-citations-fe/",
             "http://localhost:5173",
         ],
         allow_credentials=True,
@@ -73,10 +71,13 @@ from at2.tasks import ContextAttributionTask
 from at2 import AT2Attributor, AT2ScoreEstimator
 
 
-model, tokenizer = get_model_and_tokenizer("microsoft/Phi-4-mini-instruct")
+CITATION_THRESHOLD = 0.001
+MODEL_NAME = "microsoft/Phi-4-mini-instruct"
+HUB_MODEL_NAME = f"madrylab/at2-{MODEL_NAME.split('/')[-1].lower()}"
+model, tokenizer = get_model_and_tokenizer(MODEL_NAME)
 model.config.use_cache = True
 pipe = pipeline("text-generation", model=model, tokenizer=tokenizer)
-score_estimator = AT2ScoreEstimator.from_hub("madrylab/at2-phi-4-mini-instruct")
+score_estimator = AT2ScoreEstimator.from_hub(HUB_MODEL_NAME)
 
 
 class QAAttributionTask(ContextAttributionTask):
@@ -125,6 +126,23 @@ def create_attribution_task(
     if generation is not None:
         task.set_generation(generation)
     return task
+
+
+def get_streamer(task: QAAttributionTask):
+    _, input_tokens = task.get_input_text_and_tokens(return_tensors="pt")
+    streamer = TextIteratorStreamer(
+        tokenizer,
+        skip_prompt=True,
+        skip_special_tokens=True,
+    )
+    generation_kwargs = {
+        **input_tokens.to(model.device),
+        **task.generate_kwargs,
+        "streamer": streamer,
+    }
+    thread = threading.Thread(target=model.generate, kwargs=generation_kwargs)
+    thread.start()
+    return streamer
 
 
 def parse_search_queries(output_text):
@@ -221,10 +239,9 @@ async def fetch_wikipedia_content(wiki_url: str) -> Dict[str, str]:
         return {"title": "", "content": ""}
 
 
-# --- API Endpoints ---
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the QA Citations API"}
+    return {"message": "Welcome to the API for searching with AT2 citations"}
 
 
 MAX_RESULTS = 3
@@ -292,23 +309,6 @@ async def search(query: SearchQuery):
 #         )
 
 
-def get_streamer(task: QAAttributionTask):
-    _, input_tokens = task.get_input_text_and_tokens(return_tensors="pt")
-    streamer = TextIteratorStreamer(
-        tokenizer,
-        skip_prompt=True,
-        skip_special_tokens=True,
-    )
-    generation_kwargs = {
-        **input_tokens.to(model.device),
-        **task.generate_kwargs,
-        "streamer": streamer,
-    }
-    thread = threading.Thread(target=model.generate, kwargs=generation_kwargs)
-    thread.start()
-    return streamer
-
-
 @app.post("/answer")
 async def answer(prompt: LanguageModelPrompt):
     try:
@@ -344,7 +344,6 @@ async def get_citations(citation_query: CitationQuery):
 
         async def generate_citations():
             try:
-                # Send "started" message
                 yield json.dumps({"status": "started"}) + "\n"
 
                 prompt = citation_query.prompt
@@ -354,9 +353,8 @@ async def get_citations(citation_query: CitationQuery):
                 start, end = citation_query.selection
 
                 scores = attributor.get_attribution_scores(start=start, end=end)
-                threshold = 0.001
                 citation_indices = [
-                    i for i, score in enumerate(scores) if score > threshold
+                    i for i, score in enumerate(scores) if score > CITATION_THRESHOLD
                 ]
                 citation_indices.sort(key=lambda i: scores[i], reverse=True)
                 citations = []
@@ -378,10 +376,8 @@ async def get_citations(citation_query: CitationQuery):
                         }
                     )
 
-                # Send completion message with citations
                 yield json.dumps({"status": "complete", "citations": citations}) + "\n"
             except Exception as e:
-                # If any error occurs during citation generation, yield an error response
                 error_message = str(e)
                 print(f"Citation generation error: {error_message}")
                 yield json.dumps({"status": "error", "error": error_message}) + "\n"
@@ -409,7 +405,6 @@ if __name__ == "__main__":
     import uvicorn
     import sys
 
-    # Add proper signal handling for graceful shutdown
     try:
         uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
     except KeyboardInterrupt:
