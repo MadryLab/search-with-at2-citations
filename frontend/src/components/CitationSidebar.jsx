@@ -29,35 +29,44 @@ const CitationSidebar = ({ citations, onClose, isLoading = false, status = "", d
   }, [onClose, debugLog]);
 
   // Render a single citation item
-  const renderCitationItem = (citation, index) => (
-    <div key={index} className="text-sm border-l-2 border-blue-500 pl-3 py-1">
-      <div className="flex items-start">
+  const renderCitationItem = (citation, index) => {
+    // Common onClick handler for the entire citation
+    const handleClick = () => {
+      // Create and dispatch a custom event for highlighting the citation in search results
+      const event = new CustomEvent('highlightCitation', {
+        detail: {
+          citationText: citation.text,
+          sourceTitle: citation.title
+        }
+      });
+      document.dispatchEvent(event);
+    };
+    
+    return (
+      <div 
+        key={index} 
+        className="text-sm py-2 border-b border-gray-100 dark:border-gray-800 last:border-0 cursor-pointer group"
+        onClick={handleClick}
+      >
+        {/* Title row with citation number and source */}
         {!citation.isNoCitation && !citation.isError && (
-          <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full w-5 h-5 flex items-center justify-center mr-2 mt-0.5 flex-shrink-0">
-            {index + 1}
-          </span>
+          <div className="flex items-center mb-1.5">
+            <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full w-5 h-5 flex items-center justify-center mr-2 flex-shrink-0">
+              {index + 1}
+            </span>
+            <span className="font-medium text-gray-700 dark:text-gray-300">
+              From {citation.title && <span className="text-blue-600 dark:text-blue-400">{citation.title}</span>}
+            </span>
+          </div>
         )}
-        <p 
-          className="text-gray-600 dark:text-gray-400 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
-          onClick={() => {
-            // Create and dispatch a custom event for highlighting the citation in search results
-            const event = new CustomEvent('highlightCitation', {
-              detail: {
-                citationText: citation.text,
-                sourceTitle: citation.title
-              }
-            });
-            document.dispatchEvent(event);
-          }}
-        >
+        
+        {/* Citation text using full width */}
+        <p className="text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 pl-0.5">
           {citation.text}
-          {citation.title && !citation.isNoCitation && !citation.isError && (
-            <span className="text-xs block mb-1 italic text-gray-500 dark:text-gray-400"> (from <strong className="text-blue-600 dark:text-blue-400">{citation.title}</strong>)</span>
-          )}
         </p>
       </div>
-    </div>
-  );
+    );
+  };
 
   // Render loading indicator
   const renderLoadingIndicator = () => {
@@ -87,7 +96,7 @@ const CitationSidebar = ({ citations, onClose, isLoading = false, status = "", d
   };
 
   return (
-    <div className="border-l border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 w-[300px] flex-shrink-0 citation-sidebar-container flex flex-col h-full">
+    <div className="border-l border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 w-full flex-shrink-0 citation-sidebar-container flex flex-col h-full">
       <div className="sticky top-0 bg-gray-50 dark:bg-gray-900 p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center z-10 flex-shrink-0">
         <h3 className="text-md font-medium text-gray-700 dark:text-gray-300">Citations</h3>
         <button 

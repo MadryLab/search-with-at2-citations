@@ -440,12 +440,12 @@ const Answer = ({ answer, sources, query, isGenerating, isWaitingForResources, p
       </div>
       
       <div className="flex flex-row transition-all duration-300 ease-in-out flex-grow min-h-[200px] relative">
-        <div className={`p-4 relative ${showCitations ? 'w-[calc(100%-300px)]' : 'w-full'} transition-all duration-300 ease-in-out h-full`}>
+        <div className={`p-4 relative ${showCitations ? 'w-1/2 sm:w-3/5 md:w-2/3 lg:w-[calc(100%-300px)]' : 'w-full'} transition-all duration-300 ease-in-out h-full`}>
           {renderAnswerContent()}
         </div>
         
         {showCitations && (
-          <div className="h-full overflow-hidden">
+          <div className="h-full overflow-hidden w-1/2 sm:w-2/5 md:w-1/3 lg:w-[300px]">
             <CitationSidebar 
               citations={citations} 
               onClose={closeCitations} 
