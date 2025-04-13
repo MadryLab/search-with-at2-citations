@@ -414,25 +414,27 @@ const Answer = ({ answer, sources, query, isGenerating, isWaitingForResources, p
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
       <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 relative">
-        <h2 className="text-lg font-medium text-gray-800 dark:text-gray-200">Answer</h2>
-        <div className="absolute top-4 right-4 flex items-center space-x-2">
-          {!isGenerating && (
-            <button
-              onClick={handleRegenerate}
-              className="flex items-center text-xs bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300 p-2 rounded-md shadow-sm border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors"
-              disabled={isGenerating}
-            >
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center space-y-2 md:space-y-0">
+          <h2 className="text-lg font-medium text-gray-800 dark:text-gray-200">Answer</h2>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+            {!isGenerating && (
+              <button
+                onClick={handleRegenerate}
+                className="flex items-center text-xs bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300 p-2 rounded-md shadow-sm border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors w-full sm:w-auto"
+                disabled={isGenerating}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span>Regenerate</span>
+              </button>
+            )}
+            <div className="flex items-center text-xs bg-green-50 dark:bg-green-900 text-green-600 dark:text-green-300 p-2 rounded-md shadow-sm border border-green-200 dark:border-green-800 w-full sm:w-auto">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span>Regenerate</span>
-            </button>
-          )}
-          <div className="flex items-center text-xs bg-green-50 dark:bg-green-900 text-green-600 dark:text-green-300 p-2 rounded-md shadow-sm border border-green-200 dark:border-green-800">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>Click below for citations</span>
+              <span>Click below for citations</span>
+            </div>
           </div>
         </div>
       </div>
