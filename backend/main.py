@@ -221,7 +221,7 @@ async def fetch_wikipedia_content(wiki_url: str) -> Dict[str, str]:
         paragraphs = content.find_all("p")
 
         # Get the full text by joining paragraphs
-        full_text = "\n".join([p.get_text() for p in paragraphs])
+        full_text = "\n".join([p.get_text() for p in paragraphs]).strip()
 
         # Remove citations of the form [1], [2], etc.
         full_text = re.sub(r"\[\d+\]|\[citation needed\]", "", full_text)

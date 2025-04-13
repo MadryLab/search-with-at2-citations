@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import SearchForm from './components/SearchForm';
 import SearchResults from './components/SearchResults';
@@ -28,6 +28,9 @@ function App() {
   const [showAnswerBox, setShowAnswerBox] = useState(false);
   const [isWaitingForResources, setIsWaitingForResources] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Reference to the search results section
+  const searchResultsRef = useRef(null);
 
   const debugLog = createDebugLogger();
 
@@ -45,6 +48,23 @@ function App() {
     return () => {
       window.removeEventListener('resize', handleResize);
       clearTimeout(resizeTimer);
+    };
+  }, []);
+
+  // Listen for citation highlight events to scroll to search results
+  useEffect(() => {
+    const handleCitationHighlight = () => {
+      // Ensure search results are visible by scrolling to them
+      if (searchResultsRef.current) {
+        // We don't need to do the scrolling here as the SearchResults component now handles it
+        // This avoids competing scroll operations
+      }
+    };
+
+    document.addEventListener('highlightCitation', handleCitationHighlight);
+    
+    return () => {
+      document.removeEventListener('highlightCitation', handleCitationHighlight);
     };
   }, []);
 
@@ -400,7 +420,10 @@ function App() {
 
   // Render results section
   const renderResultsSection = () => (
-    <div className={`max-w-3xl mx-auto mt-4 transition-all duration-300 ease-in-out ${searchResults.length > 0 && !loading ? 'opacity-100 visible' : 'opacity-0 invisible h-0 overflow-hidden'}`}>
+    <div 
+      ref={searchResultsRef}
+      className={`max-w-3xl mx-auto mt-4 transition-all duration-300 ease-in-out ${searchResults.length > 0 && !loading ? 'opacity-100 visible' : 'opacity-0 invisible h-0 overflow-hidden'}`}
+    >
       <div className="mb-2">
         <p className="text-sm text-gray-500 dark:text-gray-400">
           Found {searchResults.length} results for "{query}"

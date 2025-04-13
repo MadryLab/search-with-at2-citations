@@ -39,7 +39,16 @@ const CitationSidebar = ({ citations, onClose, isLoading = false, status = "", d
         )}
         <p 
           className="text-gray-600 dark:text-gray-400 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
-          onClick={() => window.open(citation.link, '_blank', 'noopener,noreferrer')}
+          onClick={() => {
+            // Create and dispatch a custom event for highlighting the citation in search results
+            const event = new CustomEvent('highlightCitation', {
+              detail: {
+                citationText: citation.text,
+                sourceTitle: citation.title
+              }
+            });
+            document.dispatchEvent(event);
+          }}
         >
           {citation.text}
           {citation.title && !citation.isNoCitation && !citation.isError && (
