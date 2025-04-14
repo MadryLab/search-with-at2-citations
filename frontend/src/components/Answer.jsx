@@ -6,6 +6,22 @@ import nlp from 'compromise';
 // Configuration
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
+// Helper function to format rate limit error messages
+const formatRateLimitError = (response) => {
+  const retryAfter = response.headers.get('Retry-After') || '60';
+  const seconds = parseInt(retryAfter);
+  
+  let timeMessage;
+  if (seconds < 60) {
+    timeMessage = `${seconds} ${seconds === 1 ? 'second' : 'seconds'}`;
+  } else {
+    const minutes = Math.ceil(seconds / 60);
+    timeMessage = `${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`;
+  }
+  
+  return `Rate limit exceeded. Please try again in ${timeMessage}.`;
+};
+
 // Helper function to improve sentence splitting
 const splitIntoSentences = (text) => {
   if (!text) return [];
@@ -131,6 +147,18 @@ const Answer = ({ answer, sources, query, isGenerating, isWaitingForResources, p
       });
       
       if (!response.ok) {
+        // Handle rate limiting error specifically
+        if (response.status === 429) {
+          const data = await response.json();
+          setCitations([{
+            title: "Rate Limit Exceeded",
+            link: "#",
+            text: formatRateLimitError(response),
+            isError: true
+          }]);
+          setIsLoadingCitations(false);
+          return;
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       

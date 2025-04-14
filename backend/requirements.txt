@@ -4,11 +4,8 @@ httpx
 python-dotenv
 transformers
 torch
-duckduckgo-search
-wikipedia-api
 pydantic
 accelerate 
 flash-attn
 beautifulsoup4
 requests
-pyserini

@@ -17,6 +17,22 @@ const createDebugLogger = () => {
   };
 };
 
+// Helper function to format rate limit error messages
+const formatRateLimitError = (response, data) => {
+  const retryAfter = response.headers.get('Retry-After') || '60';
+  const seconds = parseInt(retryAfter);
+  
+  let timeMessage;
+  if (seconds < 60) {
+    timeMessage = `${seconds} ${seconds === 1 ? 'second' : 'seconds'}`;
+  } else {
+    const minutes = Math.ceil(seconds / 60);
+    timeMessage = `${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`;
+  }
+  
+  return `Rate limit exceeded. Please try again in ${timeMessage}.`;
+};
+
 function App() {
   // State management
   const [query, setQuery] = useState('');
@@ -150,6 +166,11 @@ function App() {
       });
       
       if (!response.ok) {
+        // Handle rate limiting error specifically
+        if (response.status === 429) {
+          const data = await response.json();
+          throw new Error(formatRateLimitError(response, data));
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
@@ -201,7 +222,7 @@ function App() {
       }
     } catch (err) {
       debugLog('Search error:', err);
-      setError('Failed to search. Please try again.');
+      setError(err.message || 'Failed to search. Please try again.');
       console.error(err);
       setIsWaitingForResources(false);
       setIsProcessing(false);
@@ -243,7 +264,8 @@ function App() {
       // Continue with the existing answer generation code - use the original searchQuery
       generateAnswer(searchQuery, titles, links, contents);
     } catch (err) {
-      setError('Failed to prepare answer generation. Please try again.');
+      // Use the actual error message instead of a generic message
+      setError(err.message || 'Failed to prepare answer generation. Please try again.');
       console.error(err);
       debugLog('Answer preparation error:', err);
       setIsGenerating(false);
@@ -333,6 +355,11 @@ function App() {
       });
       
       if (!response.ok) {
+        // Handle rate limiting error specifically
+        if (response.status === 429) {
+          const data = await response.json();
+          throw new Error(formatRateLimitError(response, data));
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
@@ -365,7 +392,8 @@ function App() {
       }
       
     } catch (err) {
-      setError('Failed to generate answer. Please try again.');
+      // Use the actual error message instead of a generic message
+      setError(err.message || 'Failed to generate answer. Please try again.');
       console.error(err);
       debugLog('Answer generation error:', err);
       setIsGenerating(false);
@@ -407,7 +435,17 @@ function App() {
         
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mt-4" role="alert">
-            <p>{error}</p>
+            <div className="flex items-start">
+              <div className="flex-shrink-0 mt-0.5">
+                <svg className="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-9v4a1 1 0 11-2 0v-4a1 1 0 112 0zm0-4a1 1 0 11-2 0 1 1 0 012 0z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium">Error</h3>
+                <p className="mt-1 text-sm">{error}</p>
+              </div>
+            </div>
           </div>
         )}
         

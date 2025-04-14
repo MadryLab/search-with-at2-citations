@@ -39,7 +39,7 @@ const SearchResults = ({ results }) => {
         // Set the highlighted text immediately
         setHighlightedText(citationText);
         
-        // Handle the scrolling in a more reliable way with proper sequencing
+        // Handle the scrolling with a more reliable approach
         setTimeout(() => {
           // First, ensure the complete search result is visible in the viewport
           const resultRef = document.getElementById(`search-result-${resultIndex}`);
@@ -54,26 +54,46 @@ const SearchResults = ({ results }) => {
               behavior: 'auto' // Use auto for immediate scroll
             });
             
-            // After the outer scroll completes, handle the content scrolling 
+            // Wait for the content to be fully rendered with highlights
             setTimeout(() => {
               if (contentRefs.current[resultIndex]) {
                 const contentDiv = contentRefs.current[resultIndex];
-                const textContent = contentDiv.textContent;
-                const textIndex = textContent.indexOf(citationText);
                 
-                if (textIndex !== -1) {
-                  // Calculate the position to scroll to
-                  const approximatePosition = (textIndex / textContent.length) * contentDiv.scrollHeight;
-                  const visibleHeight = contentDiv.clientHeight;
+                // Look for the highlighted mark element instead of calculating position
+                const highlightedElement = contentDiv.querySelector('mark');
+                
+                if (highlightedElement) {
+                  // Get the position of the highlighted element relative to the container
+                  const highlightRect = highlightedElement.getBoundingClientRect();
+                  const containerRect = contentDiv.getBoundingClientRect();
+                  const relativeTop = highlightRect.top - containerRect.top;
                   
-                  // Scroll with smooth behavior for better UX
+                  // Calculate scroll position to center the highlighted element in the viewport
+                  const scrollPosition = relativeTop + contentDiv.scrollTop - (contentDiv.clientHeight / 2) + (highlightRect.height / 2);
+                  
+                  // Scroll with smooth behavior
                   contentDiv.scrollTo({
-                    top: Math.max(0, approximatePosition - (visibleHeight / 2)),
+                    top: Math.max(0, scrollPosition),
                     behavior: 'smooth'
                   });
+                } else {
+                  // Fall back to text search method if no mark element is found
+                  const textContent = contentDiv.textContent;
+                  const textIndex = textContent.indexOf(citationText);
+                  
+                  if (textIndex !== -1) {
+                    // Original approximation as fallback
+                    const approximatePosition = (textIndex / textContent.length) * contentDiv.scrollHeight;
+                    const visibleHeight = contentDiv.clientHeight;
+                    
+                    contentDiv.scrollTo({
+                      top: Math.max(0, approximatePosition - (visibleHeight / 2)),
+                      behavior: 'smooth'
+                    });
+                  }
                 }
               }
-            }, 50); // Short delay to ensure outer scroll completes first
+            }, 100); // Longer delay to ensure content is rendered with highlights
           }
         }, 50); // Short delay to ensure state updates are applied
       }

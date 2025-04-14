@@ -42,6 +42,25 @@ const CitationSidebar = ({ citations, onClose, isLoading = false, status = "", d
       document.dispatchEvent(event);
     };
     
+    // Special handling for error citations (including rate limits)
+    if (citation.isError) {
+      return (
+        <div key={index} className="text-sm py-4 border-b border-gray-100 dark:border-gray-800 last:border-0">
+          <div className="flex items-start">
+            <div className="flex-shrink-0 mt-0.5">
+              <svg className="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-9v4a1 1 0 11-2 0v-4a1 1 0 112 0zm0-4a1 1 0 11-2 0 1 1 0 012 0z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-700 dark:text-red-500">{citation.title}</h3>
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{citation.text}</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
     return (
       <div 
         key={index} 
