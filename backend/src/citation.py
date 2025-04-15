@@ -6,7 +6,7 @@ from .task import create_attribution_task
 
 
 ABSOLUTE_THRESHOLD = 0.0005
-RELATIVE_THRESHOLD = 0.2
+RELATIVE_THRESHOLD = None
 
 
 def select_citation_indices(

@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 
 // Default search query
-const DEFAULT_QUERY = 'How does GPT-4.5 compare to o3-mini?';
-// const DEFAULT_QUERY = 'Which is taller: the Empire State Building or 10 blue whales?';
+const DEFAULT_QUERY = 'How does Claude 3.7 Sonnet compare to o3-mini?';
 
 const SearchForm = ({ onSearch, isProcessing }) => {
   const [query, setQuery] = useState(DEFAULT_QUERY);
