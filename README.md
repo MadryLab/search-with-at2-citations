@@ -7,7 +7,7 @@ Given a search query, this application
 2. Uses an LLM (by default, Microsoft's [Phi-4-mini-instruct](https://huggingface.co/microsoft/Phi-4-mini-instruct)) to respond to the query given information from the relevant web pages.
 3. Provides citations, i.e., references to the part of the web pages used by the model, for any part of the response.
 
-![video](assets/search_with_at2_citations.mov)
+https://github.com/user-attachments/assets/d0ba3c87-8aa4-483b-b366-44cd3e0f4bbd
 
 ## Prerequisites
 
