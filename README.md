@@ -7,6 +7,8 @@ Given a search query, this application
 2. Uses an LLM (by default, Microsoft's [Phi-4-mini-instruct](https://huggingface.co/microsoft/Phi-4-mini-instruct)) to respond to the query given information from the relevant web pages.
 3. Provides citations, i.e., references to the part of the web pages used by the model, for any part of the response.
 
+![video](assets/search_with_at2_citations.mov)
+
 ## Prerequisites
 
 Running this application requires the following:
@@ -69,10 +71,3 @@ You can run both the backend and frontend with the `run.sh` script provided in t
 ```
 
 The frontend will be available at: http://localhost:3000
-
-## API Endpoints
-
-- `GET /`: Welcome message
-- `POST /search`: Search for information using the Tavily API
-- `POST /answer`: Generate an AI answer based on search results
-- `POST /get-citations`: Get citations for a generated answer
