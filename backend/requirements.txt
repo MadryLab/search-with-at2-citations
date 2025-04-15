@@ -9,3 +9,5 @@ accelerate
 flash-attn
 beautifulsoup4
 requests
+tavily
+at2

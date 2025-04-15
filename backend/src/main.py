@@ -74,7 +74,7 @@ rate_limiter = RateLimiter()
 # These imports need to be after the app is created because it sets CUDA_VISIBLE_DEVICES
 from .task import create_attribution_task
 from .utils import get_streamer
-from .citation import get_citations
+from .citation import get_at2_citations
 from at2.utils import get_model_and_tokenizer
 from at2 import AT2ScoreEstimator
 
@@ -105,7 +105,7 @@ async def add_rate_limit_headers(request: Request, call_next):
 @app.post("/search", response_model=List[SearchResult])
 async def search(
     query: SearchQuery,
-    _: str = Depends(create_rate_limiter(rate_limiter, RATE_LIMIT_SEARCH)),
+    _: str = Depends(create_rate_limiter(rate_limiter, RATE_LIMIT_SEARCH, endpoint="search")),
 ):
     try:
 
@@ -131,7 +131,7 @@ async def search(
 @app.post("/answer")
 async def answer(
     prompt: LanguageModelPrompt,
-    _: str = Depends(create_rate_limiter(RATE_LIMIT_ANSWER)),
+    _: str = Depends(create_rate_limiter(rate_limiter, RATE_LIMIT_ANSWER, endpoint="answer")),
 ):
     try:
 
@@ -162,7 +162,7 @@ async def answer(
 @app.post("/get-citations")
 async def get_citations(
     citation_query: CitationQuery,
-    _: str = Depends(create_rate_limiter(RATE_LIMIT_CITATIONS)),
+    _: str = Depends(create_rate_limiter(rate_limiter, RATE_LIMIT_CITATIONS, endpoint="citations")),
 ):
     try:
 
@@ -171,11 +171,12 @@ async def get_citations(
                 yield json.dumps({"status": "started"}) + "\n"
 
                 prompt = citation_query.prompt
-                citations = get_citations(
+                citations = get_at2_citations(
                     query=prompt.query,
                     titles=prompt.titles,
-                    links=prompt.links,
                     contents=prompt.contents,
+                    model=model,
+                    tokenizer=tokenizer,
                     answer=citation_query.answer,
                     selection=citation_query.selection,
                     score_estimator=score_estimator,

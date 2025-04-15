@@ -1,103 +1,78 @@
-# QA Citations Application
+# Search with AT2 Citations
 
-A minimal application for question answering with citations using LLMs. This application uses DuckDuckGo for search and Microsoft's Phi-4-mini model for generating answers with proper citations.
+An application mimicking LLM-powered search engines with citations provided by [AT2](https://github.com/MadryLab/AT2.git).
+Given a search query, this application
 
-## Features
+1. Invokes the [Tavily](https://tavily.com) API to retrieve relevant web pages.
+2. Uses an LLM (by default, Microsoft's [Phi-4-mini-instruct](https://huggingface.co/microsoft/Phi-4-mini-instruct)) to respond to the query given information from the relevant web pages.
+3. Provides citations, i.e., references to the part of the web pages used by the model, for any part of the response.
 
-- Search for relevant information using DuckDuckGo
-- Select relevant sources to use as context
-- Generate answers to questions using Phi-4-mini
-- Properly cite sources in the answers
-- Clean, modern UI with dark mode support
+## Prerequisites
 
-## Project Structure
+Running this application requires the following:
 
+- Node.js
+- npm
+- Python
+- [Tavily API key](https://tavily.com/) for search
+- GPU with CUDA support for running the LLM
+
+## Installation
+
+### Clone the repository
+
+```bash
+git clone https://github.com/MadryLab/search-with-at2-citations.git
+cd search-with-at2-citations
 ```
-qa-citations/
-├── backend/             # FastAPI backend
-│   ├── main.py          # Main API endpoints
-│   ├── requirements.txt # Python dependencies
-│   └── run.sh           # Script to run the backend
-└── frontend/            # React frontend
-    ├── src/             # React source code
-    ├── index.html       # HTML entry point
-    ├── package.json     # NPM dependencies
-    └── vite.config.js   # Vite configuration
-```
 
-## Setup and Running
-
-### Backend
+### Backend Setup
 
 1. Navigate to the backend directory:
-   ```
-   cd backend
-   ```
 
-2. Install dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
+```bash
+cd backend
+```
 
-3. Run the backend server:
-   ```
-   uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-   ```
-   Or use the provided script:
-   ```
-   ./run.sh
-   ```
+2. Install the required Python packages:
 
-### Frontend
+```bash
+pip install -r requirements.txt
+```
+
+3. Set your Tavily API key by adding the following to your `.bashrc` or equivalent:
+
+```bash
+export TAVILY_API_KEY="your_tavily_api_key_here"
+```
+
+### Frontend Setup
 
 1. Navigate to the frontend directory:
-   ```
-   cd frontend
-   ```
 
-2. Install dependencies:
-   ```
-   npm install
-   ```
+```bash
+cd ../frontend
+```
 
-3. Run the development server:
-   ```
-   npm run dev
-   ```
+2. Install the required Node.js packages:
+
+```bash
+npm install
+```
+
+## Running the Application
+
+You can run both the backend and frontend with the `run.sh` script provided in the root directory:
+
+```bash
+./run.sh
+```
+
+The frontend will be available at: http://localhost:3000
 
 ## API Endpoints
 
 - `GET /`: Welcome message
-- `POST /search`: Search for relevant information
-- `POST /fetch-content`: Fetch content from a URL
-- `POST /answer`: Generate an answer based on the provided context with proper citations
-
-## Technologies Used
-
-- **Backend**: FastAPI, Transformers, DuckDuckGo Search
-- **Frontend**: React, Vite, Tailwind CSS
-- **Models**: Microsoft Phi-4-mini
-
-## License
-
-MIT 
-
-## Citation Feature
-
-The QA Citations system includes a powerful citation feature that allows users to see the source of information for any part of the generated answer:
-
-1. **Text Selection**: Simply highlight any text in the answer to see relevant citations from the source documents.
-2. **Citation Popup**: A popup will appear showing which sources contain information related to the selected text.
-3. **Source Linking**: Each citation includes a link to the original source for further reading.
-
-### How It Works
-
-The citation system uses a combination of techniques to match answer text with relevant source content:
-
-- Text matching to find direct quotes or paraphrased content
-- Semantic similarity to identify conceptually related information
-- Entity recognition to link named entities to their source mentions
-
-### Implementation Details
-
-The citation system is implemented in `backend/citer.py` with a clean abstraction that can be extended with more sophisticated matching algorithms. 
+- `POST /search`: Search for information using the Tavily API
+- `POST /answer`: Generate an AI answer based on search results
+- `POST /get-citations`: Get citations for a generated answer
